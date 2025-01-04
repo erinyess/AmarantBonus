@@ -36,6 +36,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.rememberCoroutineScope
+import android.util.Log
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
@@ -305,23 +306,59 @@ fun LoginScreen(navController: NavHostController) {
     }
 }
 
-suspend fun performLogin(phoneNumber: String, password: String, navController: NavHostController, onError: (String) -> Unit, language: String) {
+suspend fun performLogin(
+    phoneNumber: String,
+    password: String,
+    navController: NavHostController,
+    onError: (String) -> Unit,
+    language: String
+) {
     try {
         withContext(Dispatchers.IO) {
             val client = OkHttpClient()
             val url = "http://2.135.218.2/ut_api/hs/api/get_bonuses/?tel=$phoneNumber"
             val request = Request.Builder().url(url).build()
-            val response = client.newCall(request).execute()
-            val jsonResponse = response.body?.string()?.let { JSONObject(it) }
 
-            if (jsonResponse != null && jsonResponse.optBoolean("success")) {
-                navController.navigate("main_screen")
+            Log.d("LoginDebug", "Sending request to URL: $url")
+
+            val response = client.newCall(request).execute()
+            val responseBody = response.body?.string()
+
+            Log.d("LoginDebug", "Response received: $responseBody")
+
+            if (responseBody.isNullOrEmpty()) {
+                Log.e("LoginError", "Empty response from server")
+                withContext(Dispatchers.Main) { onError("Empty response from server") }
+                return@withContext
+            }
+
+            val jsonResponse = JSONObject(responseBody)
+
+            val name = jsonResponse.optString("name", "")
+            val bonuses = jsonResponse.optInt("bonusi", -1)
+
+            val success = name.isNotEmpty() && bonuses >= 0
+            val message = if (success) {
+                "Login successful for user: $name"
             } else {
-                val message = jsonResponse?.optString("message") ?: "Unknown error"
-                onError(message)
+                "Invalid response structure from server"
+            }
+
+            Log.d("LoginDebug", "Parsed JSON Response: success=$success, message=$message")
+
+            if (success) {
+                Log.d("LoginDebug", "Login successful, preparing navigation")
+                withContext(Dispatchers.Main) {
+                    navController.navigate("main_screen/$phoneNumber/$bonuses")
+                }
+            } else {
+                Log.e("LoginError", "Server returned error: $message")
+                withContext(Dispatchers.Main) { onError(message) }
             }
         }
     } catch (e: Exception) {
-        onError(e.message ?: "Unknown error")
+        Log.e("LoginError", "Exception occurred: ${e.localizedMessage}", e)
+        withContext(Dispatchers.Main) { onError(e.message ?: "Unknown error occurred") }
     }
 }
+

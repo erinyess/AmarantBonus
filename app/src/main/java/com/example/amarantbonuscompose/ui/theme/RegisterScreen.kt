@@ -583,7 +583,7 @@ suspend fun performRegistration(
     phoneNumber: String,
     password: String,
     city: String,
-    dateOfBirth: String,
+    dateOfBirth: String,  // Дата в формате "yyyy-MM-dd" передается сюда
     navController: NavHostController,
     onError: (String) -> Unit,
     currentLanguage: String
@@ -594,54 +594,53 @@ suspend fun performRegistration(
 
     val url = "http://2.135.218.2/ut_api/hs/api/registration/"
 
-    val client = OkHttpClient()
+    // Преобразование даты в формат "yyyyMMdd"
+    val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+
+    // Преобразуем дату, которую мы получаем (например, "2025-01-01") в нужный формат
+    val formattedDate = try {
+        val inputDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())  // Текущий формат входящей даты
+        val parsedDate = inputDateFormat.parse(dateOfBirth) ?: throw IllegalArgumentException("Дата не может быть преобразована.")
+        dateFormat.format(parsedDate)  // Преобразуем в формат "yyyyMMdd"
+    } catch (e: Exception) {
+        Log.e("RegisterUser", "Invalid Date Format: ${e.message}")
+        withContext(Dispatchers.Main) {
+            onError(getText("Неверный формат даты. Ожидается формат yyyyMMdd", "Қате күн форматы. Талап етілген формат yyyyMMdd"))
+        }
+        return
+    }
 
     // Создание JSON для тела запроса
     val json = JSONObject().apply {
         put("tel", phoneNumber)
         put("name", name)
         put("password", password)
-        put("dateOfBirth", dateOfBirth)
+        put("dateOfBirth", formattedDate)  // Используем отформатированную дату
         put("city", city)
     }
 
     val mediaType = "application/json".toMediaTypeOrNull()
     val requestBody = json.toString().toRequestBody(mediaType)
 
+    val client = OkHttpClient()
+
     // Создание запроса
     val request = Request.Builder()
         .url(url)
         .post(requestBody)
         .build()
+
     Log.d("RegisterUser", "JSON Data: $json")
 
     try {
-        val client = OkHttpClient()
-        val request = Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build()
-
-        val response = client.newCall(request).execute()
-
-        if (response.isSuccessful) {
-            Log.d("RegisterUser", "Response: ${response.body?.string()}")
-            navController.navigate("home_screen") // Переход на экран после успешной регистрации
-        } else {
-            val errorMsg = response.body?.string() ?: "Ошибка сервера"
-            Log.e("RegisterUser", "Error: $errorMsg")
-            onError(errorMsg)
-        }
-    } catch (e: Exception) {
-        Log.e("RegisterUser", "Exception: ${e.message}")
-    }
-
-
-    try {
+        // Выполнение запроса в фоновом потоке
         val response = withContext(Dispatchers.IO) { client.newCall(request).execute() }
 
         if (response.isSuccessful) {
             val responseBody = response.body?.string()
+            Log.d("RegisterUser", "Response: $responseBody")
+
+            // Проверка, зарегистрирован ли уже пользователь
             if (responseBody?.contains("Пользователь уже зарегистрирован") == true) {
                 // Ошибка: пользователь уже существует
                 withContext(Dispatchers.Main) {
@@ -658,12 +657,15 @@ suspend fun performRegistration(
             }
         } else {
             // Сервер вернул ошибку
+            val errorMsg = response.body?.string() ?: "Ошибка сервера"
+            Log.e("RegisterUser", "Error: $errorMsg")
             withContext(Dispatchers.Main) {
                 onError(getText("Ошибка сервера: ${response.code}", "Сервер қатесі: ${response.code}"))
             }
         }
     } catch (e: Exception) {
         // Обработка исключений (например, проблема с сетью)
+        Log.e("RegisterUser", "Exception: ${e.message}", e)
         withContext(Dispatchers.Main) {
             onError(getText("Ошибка сети: ${e.localizedMessage}", "Желі қатесі: ${e.localizedMessage}"))
         }
