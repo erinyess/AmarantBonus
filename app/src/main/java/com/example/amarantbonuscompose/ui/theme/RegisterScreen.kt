@@ -407,7 +407,7 @@ fun RegisterScreen(navController: NavHostController) {
 // Открытие прокручиваемого выбора даты
             if (showDatePicker) {
                 val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-                val yearRange = 1900..currentYear
+                val yearRange = 1970..currentYear
                 val monthRange = 1..12
                 val dayRange = 1..31
 
