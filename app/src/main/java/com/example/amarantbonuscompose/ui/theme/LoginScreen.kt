@@ -165,7 +165,7 @@ fun LoginScreen(navController: NavHostController) {
                         .width(270.dp)
                         .height(60.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF791787))
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF9C27B0))
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_login_icon),

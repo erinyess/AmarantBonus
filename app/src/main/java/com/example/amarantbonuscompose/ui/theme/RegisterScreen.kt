@@ -519,6 +519,51 @@ fun RegisterScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(24.dp))
 
 
+            // Кнопка "Ваш город"
+            Text(
+                text = getText("Ваш город", "Сіздің қалаңыз"),
+                color = Color.White,
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            Box(
+                modifier = Modifier
+                    .width(250.dp)
+                    .height(56.dp)
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+                    .clickable { expandedCity = true }
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+            ) {
+                Text(text = selectedCity, color = Color.Black)
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null,
+                    tint = Color.Black,
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                )
+
+                DropdownMenu(
+                    expanded = expandedCity,
+                    onDismissRequest = { expandedCity = false },
+                    modifier = Modifier
+                        .width(250.dp)
+                ) {
+                    cities.forEach { city ->
+                        DropdownMenuItem(onClick = {
+                            selectedCity = city
+                            expandedCity = false
+                        }) {
+                            Text(text = city)
+                        }
+                    }
+                }
+
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
 
             // Кнопка "Зарегистрироваться"
             Button(
