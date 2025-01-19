@@ -72,26 +72,21 @@ fun RegisterScreen(navController: NavHostController) {
 
     // Расширенный список городов Казахстана
     val cities = listOf(
+        getText("Актау", "Актау"),
+        getText("Актобе", "Ақтөбе"),
         getText("Алматы", "Алматы"),
         getText("Нур-Султан", "Нұр-Сұлтан"),
-        getText("Шымкент", "Шымкент"),
         getText("Атырау", "Атырау"),
-        getText("Актобе", "Ақтөбе"),
         getText("Караганда", "Қарағанды"),
-        getText("Тараз", "Тараз"),
-        getText("Павлодар", "Павлодар"),
-        getText("Усть-Каменогорск", "Өскемен"),
-        getText("Семей", "Семей"),
         getText("Костанай", "Қостанай"),
-        getText("Кызылорда", "Қызылорда"),
-        getText("Уральск", "Орал"),
-        getText("Петропавловск", "Петропавл"),
-        getText("Темиртау", "Теміртау"),
         getText("Кокшетау", "Көкшетау"),
-        getText("Талдыкорган", "Талдықорған"),
-        getText("Экибастуз", "Екібастұз"),
-        getText("Рудный", "Рудный"),
-        getText("Жезказган", "Жезқазған")
+        getText("Кызылорда", "Қызылорда"),
+        getText("Павлодар", "Павлодар"),
+        getText("Тараз", "Тараз"),
+        getText("Туркестан", "Түркістан"),
+        getText("Уральск", "Орал"),
+        getText("Усть-Каменогорск", "Өскемен"),
+        getText("Шымкент", "Шымкент"),
         // Добавьте остальные города по необходимости
     )
 
@@ -407,7 +402,7 @@ fun RegisterScreen(navController: NavHostController) {
 // Открытие прокручиваемого выбора даты
             if (showDatePicker) {
                 val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-                val yearRange = 1970..currentYear
+                val yearRange = 1960..currentYear
                 val monthRange = 1..12
                 val dayRange = 1..31
 
